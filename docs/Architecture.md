@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 ### QUEST — Onderdeel 4 — Automatiseren bouwtekeningen
 
-> **Status:** v0.2 — concept, opgesteld in overleg met Alex van Bommel.
-> **Datum:** 25 september 2026
+> **Status:** v0.3 — concept, opgesteld in overleg met Alex van Bommel.
+> **Datum:** 1 oktober 2026 (§4 bijgewerkt — eerder v0.2, 25 september 2026)
 > **Let op:** dit onderdeel start met een individuele spike-week per teamlid (zie `CLAUDE.md` §3). Enkele technische keuzes hieronder zijn daarom nog voorlopig — definitief te maken ná die week, op basis van wat werkte.
 
 ---
@@ -72,18 +72,23 @@ Aanbevolen opslag op dit afwerkingsniveau: **SQLite** — geen aparte databasese
 
 ## 4. Repo- en mapstructuur
 
-Akkoord met het gedeelde patroon:
+`[BIJGEWERKT v0.3 — 1 oktober 2026]` Aangevuld met `.claude/plans/`, dat er bij het opzetten van de repo (S0.1) bij bleek te horen maar nog niet in v0.2 stond: dit is waar de `planner`-subagent de planbestanden per slice neerzet (status `draft` → `approved` → `in_uitvoering` → `gereviewd`, zie `Workflow.md` §2). De repo staat inmiddels live op GitHub (`alexvb106-glitch/Quest-subonderdeel-4`), met de vier subagents (`planner`, `builder`, `reviewer`, `breker`) en de zeven slash-commands al aangemaakt in `.claude/agents/` resp. `.claude/commands/`.
 
 ```
 onderdeel-4/
-├── .claude/          # subagents & slash-commands (zie Workflow.md)
+├── .claude/
+│   ├── agents/       # planner.md, builder.md, reviewer.md, breker.md
+│   ├── commands/     # de zeven slash-commands (zie Workflow.md §1)
+│   └── plans/        # planbestanden per slice, aangemaakt door /nieuwe-slice
 ├── docs/             # CLAUDE.md, Architecture.md, Interfaces.md, Design.md, Backlog.md, Huisstijl_en_conventies.md
 ├── src/              # applicatiecode
 ├── tests/
-└── CLAUDE.md         # in de root
+├── .gitignore
+├── CLAUDE.md         # in de root
+└── README.md
 ```
 
-Repo wordt door onderdeel 4 zelf aangemaakt (niet centraal door Kai), conform `CLAUDE.md` §7.
+Repo is door onderdeel 4 zelf aangemaakt (niet centraal door Kai), conform `CLAUDE.md` §7. Pushen naar GitHub gebeurt bewust handmatig door het teamlid zelf (human in the loop), niet geautomatiseerd — zie ook de instructie in `.claude/commands/github-afronding.md`.
 
 ---
 
@@ -99,6 +104,6 @@ Repo wordt door onderdeel 4 zelf aangemaakt (niet centraal door Kai), conform `C
 |---|---|
 | `CLAUDE.md` | Scope, routes, afwerkingsniveau, open punten richting onderdeel 5 |
 | `Onderdeel5_Interfaces_voorstel.md` | Generiek afsprakenkader (auth, JSON, foutafhandeling); §5 nog aan te passen na Revit-scopewijziging |
-| `Interfaces.md` (onderdeel 4) | ✅ v0.1 — eigen versie van het contract, gebaseerd op dit document |
+| `Interfaces.md` (onderdeel 4) | Eigen versie van het contract, gebaseerd op dit document |
 | `Workflow.md` | Procesdraaiboek dat tegen deze architectuur getest wordt (o.a. door de breker) |
 | `Backlog.md` | Bevat o.a. de "Later"-slice voor archiefbron-caching (zie §3) |
