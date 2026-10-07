@@ -51,7 +51,7 @@ Alleen van toepassing als deze slice een zichtbaar resultaat oplevert (zie `Desi
 ## 6. Stap 5 — Onafhankelijke review (`/controleer-slice`)
 
 De `reviewer` controleert, los van de builder:
-- **Functionaliteit** tegen de Definition of Done uit `CLAUDE.md` — werkt het zoals in `Backlog.md` omschreven, niet meer/niet minder.
+- **Functionaliteit** tegen de Definition of Done uit het planbestand (`.claude/plans/<slice-id>.md`) — werkt het zoals in `Backlog.md` omschreven, niet meer/niet minder.
 - **Code-conventies:** Nederlandse comments per blok aanwezig, bestandsstructuur/overzichtelijkheid, geen ongeautoriseerde nieuwe dependencies.
 
 Gevonden problemen lost de reviewer zelf op. Status → `gereviewd`.
@@ -87,6 +87,6 @@ Op elk moment door een teamlid aan te roepen, ook niet-coders. Legt in gewone ta
 
 | Document | Relevantie voor dit document |
 |---|---|
-| `CLAUDE.md` | Stophooks, procesoverzicht, Definition of Done, git-flow |
+| `CLAUDE.md` | Stophooks, procesoverzicht, git-flow |
 | `Architecture.md` | Techniek — basis voor de breker's technische testen |
 | `Backlog.md` | Input voor de planner bij elke `/nieuwe-slice` |

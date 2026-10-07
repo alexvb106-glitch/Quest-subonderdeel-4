@@ -93,10 +93,10 @@ Nog geen VvE-pand definitief geselecteerd — werving loopt. Selectiecriteria: b
 | Document | Status |
 |---|---|
 | `CLAUDE.md` | Dit document (v0.1) |
-| `Architecture.md` | ✅ v0.2 |
+| `Architecture.md` | ✅ v0.4 |
 | `Interfaces.md` | ✅ v0.1 |
 | `Design.md` | ✅ v0.1 |
 | `Workflow.md` | ✅ Klaar |
-| `Backlog.md` | ✅ v0.1 |
+| `Backlog.md` | ✅ v0.2 |
 | `Huisstijl_en_conventies.md` | ✅ Projectbreed, ongewijzigd |
 | `Onderdeel5_Interfaces_voorstel.md` | ✅ Referentie, met scope-statusnotitie |

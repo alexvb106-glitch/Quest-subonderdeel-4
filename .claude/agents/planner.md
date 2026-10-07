@@ -20,6 +20,7 @@ Gegeven een slice-ID (bijvoorbeeld S0.3) uit docs/Backlog.md, stel je een concre
    - wat er gebouwd gaat worden
    - welke bestanden worden aangeraakt
    - welke aannames worden gedaan (bijv. mockdata voor nog niet bevestigde Interfaces.md-punten met andere onderdelen)
+   - een Definition of Done (afvinkbare lijst), waartegen de reviewer toetst
 
 ## Stophook
 
