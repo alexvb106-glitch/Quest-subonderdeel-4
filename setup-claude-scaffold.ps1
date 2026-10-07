@@ -1,4 +1,5 @@
-cd "C:\Users\alexv\OneDrive\HU Leerjaar 4\Claude Subproject\onderdeel-4"
+# Werk vanuit de map waar dit script staat (de repo-root), ongeacht wie het draait
+Set-Location $PSScriptRoot
 
 New-Item -ItemType Directory -Force -Path ".claude\agents" | Out-Null
 New-Item -ItemType Directory -Force -Path ".claude\commands" | Out-Null
@@ -206,12 +207,9 @@ De PR-beschrijving bevat een korte samenvatting van wat gebouwd is, plus wat de 
 BELANGRIJK: het daadwerkelijke pushen van de branch en het aanmaken/mergen van de PR gebeurt handmatig door het teamlid zelf (human in the loop) - dit commando bereidt de branch en de PR-beschrijving voor, maar voert zelf geen git push of PR-aanmaak uit zonder expliciete, aparte opdracht van het teamlid.
 '@ | Set-Content -Path ".claude\commands\github-afronding.md" -Encoding utf8
 
-# ===== COMMIT & PUSH =====
+# ===== AFRONDING =====
 
-git add .claude
-git commit -m "Voeg subagents en slash-commands toe (.claude/agents, .claude/commands)"
-git push
-
+# Bewust geen git add/commit/push: committen en pushen doet het teamlid zelf (human in the loop)
 Write-Host ""
-Write-Host "Klaar. Gemaakt:" -ForegroundColor Green
+Write-Host "Klaar. Gemaakt (nog niet gecommit):" -ForegroundColor Green
 Get-ChildItem -Path ".claude\agents", ".claude\commands" -File | Select-Object FullName
