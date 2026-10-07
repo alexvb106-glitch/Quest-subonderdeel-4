@@ -17,4 +17,4 @@ Zie `CLAUDE.md` (root) voor scope, routes en teamafspraken, en `docs/` voor de v
 
 ## Status
 
-Fase 0 — spike-week (zie `CLAUDE.md` §3, `docs/Backlog.md` S0.2).
+Fase 0 — fundament; spike-week afgerond.
