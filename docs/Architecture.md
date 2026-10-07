@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 ### QUEST — Onderdeel 4 — Automatiseren bouwtekeningen
 
-> **Status:** v0.3 — concept, opgesteld in overleg met Alex van Bommel.
-> **Datum:** 1 oktober 2026 (§4 bijgewerkt — eerder v0.2, 25 september 2026)
+> **Status:** v0.4 — concept, opgesteld in overleg met Alex van Bommel.
+> **Datum:** 7 oktober 2026 (§4 bijgewerkt in S0.1 — eerder v0.3, 1 oktober 2026; v0.2, 25 september 2026)
 > **Let op:** dit onderdeel start met een individuele spike-week per teamlid (zie `CLAUDE.md` §3). Enkele technische keuzes hieronder zijn daarom nog voorlopig — definitief te maken ná die week, op basis van wat werkte.
 
 ---
@@ -74,18 +74,24 @@ Aanbevolen opslag op dit afwerkingsniveau: **SQLite** — geen aparte databasese
 
 `[BIJGEWERKT v0.3 — 1 oktober 2026]` Aangevuld met `.claude/plans/`, dat er bij het opzetten van de repo (S0.1) bij bleek te horen maar nog niet in v0.2 stond: dit is waar de `planner`-subagent de planbestanden per slice neerzet (status `draft` → `approved` → `in_uitvoering` → `gereviewd`, zie `Workflow.md` §2). De repo staat inmiddels live op GitHub (`alexvb106-glitch/Quest-subonderdeel-4`), met de vier subagents (`planner`, `builder`, `reviewer`, `breker`) en de zeven slash-commands al aangemaakt in `.claude/agents/` resp. `.claude/commands/`.
 
+`[BIJGEWERKT v0.4 — 7 oktober 2026]` Bijgewerkt in slice S0.1: `.python-version`, `pyproject.toml` en `setup-claude-scaffold.ps1` in de root, `docs/Spike_overdracht.md` bij `docs/`, en `tests/test_environment.py` als eerste test. `CLAUDE.md` staat alleen in de root (stond in v0.3 abusievelijk ook bij `docs/`).
+
 ```
 onderdeel-4/
 ├── .claude/
 │   ├── agents/       # planner.md, builder.md, reviewer.md, breker.md
 │   ├── commands/     # de zeven slash-commands (zie Workflow.md §1)
 │   └── plans/        # planbestanden per slice, aangemaakt door /nieuwe-slice
-├── docs/             # CLAUDE.md, Architecture.md, Interfaces.md, Design.md, Backlog.md, Huisstijl_en_conventies.md
+├── docs/             # Architecture.md, Interfaces.md, Design.md, Backlog.md, Huisstijl_en_conventies.md, Spike_overdracht.md
 ├── src/              # applicatiecode
 ├── tests/
+│   └── test_environment.py
 ├── .gitignore
+├── .python-version   # 3.14.7
 ├── CLAUDE.md         # in de root
-└── README.md
+├── pyproject.toml    # projectmetadata, dev-dependency pytest, pytest-configuratie
+├── README.md
+└── setup-claude-scaffold.ps1
 ```
 
 Repo is door onderdeel 4 zelf aangemaakt (niet centraal door Kai), conform `CLAUDE.md` §7. Pushen naar GitHub gebeurt bewust handmatig door het teamlid zelf (human in the loop), niet geautomatiseerd — zie ook de instructie in `.claude/commands/github-afronding.md`.
