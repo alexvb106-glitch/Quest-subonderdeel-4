@@ -93,7 +93,7 @@ Nog geen VvE-pand definitief geselecteerd — werving loopt. Selectiecriteria: b
 | Document | Status |
 |---|---|
 | `CLAUDE.md` | Dit document (v0.1) |
-| `Architecture.md` | ✅ v0.4 |
+| `Architecture.md` | ✅ v0.5 |
 | `Interfaces.md` | ✅ v0.1 |
 | `Design.md` | ✅ v0.1 |
 | `Workflow.md` | ✅ Klaar |

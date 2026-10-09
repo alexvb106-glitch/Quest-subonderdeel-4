@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 ### QUEST — Onderdeel 4 — Automatiseren bouwtekeningen
 
-> **Status:** v0.4 — concept, opgesteld in overleg met Alex van Bommel.
-> **Datum:** 7 oktober 2026 (§4 bijgewerkt in S0.1 — eerder v0.3, 1 oktober 2026; v0.2, 25 september 2026)
+> **Status:** v0.5 — concept, opgesteld in overleg met Alex van Bommel.
+> **Datum:** 9 oktober 2026 (§1 webframework vastgelegd — eerder v0.4, 7 oktober 2026; v0.3, 1 oktober 2026; v0.2, 25 september 2026)
 > **Let op:** dit onderdeel start met een individuele spike-week per teamlid (zie `CLAUDE.md` §3). Enkele technische keuzes hieronder zijn daarom nog voorlopig — definitief te maken ná die week, op basis van wat werkte.
 
 ---
@@ -12,6 +12,7 @@
 | Keuze | Status |
 |---|---|
 | Programmeertaal API/backend | **Python — bevestigd, teambreed besproken en vastgesteld (25-09-2026).** |
+| Webframework API | **FastAPI — gekozen door het team (Alex en Jeroen), 9-10-2026.** Argumentatie: automatisch gegenereerde, interactieve API-documentatie (OpenAPI) als hulp bij de afstemming met onderdeel 5; invoervalidatie via vaste types (Pydantic); goede ondersteuning voor asynchrone verwerking, passend bij de job-queue (§2.1). Alternatief Flask afgewezen: eenvoudiger, maar validatie en documentatie moeten dan zelf gebouwd worden. Wordt als runtime-dependency toegevoegd in S0.3. |
 | PDF-verwerking (route c) | `[OPEN]` Geen vaste aanpak — de te ontvangen archief-PDF's volgen geen vaste tekenstandaard (variëren per bouwperiode/gemeente), dus dit wordt per situatie/tijdens de spike verkend (OCR versus vectorisatie/beeldherkenning). |
 | Conversie naar IFC/DXF | `[OPEN]` Te verkennen tijdens spike-week, bijv. `ifcopenshell` (IFC) of `ezdxf` (DXF) als startpunt — nog niet gekozen. |
 | Dynamo-scripts (Alpha/Bravo-plaatsing) | Bestaand, werkend op Revit-projecten (zie `CLAUDE.md` §2) — dient als referentie voor plaatsings-/conversielogica, ook al is Revit niet langer de primaire route. |
