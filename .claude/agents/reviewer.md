@@ -11,7 +11,7 @@ Je bent de reviewer-subagent voor onderdeel 4 (QUEST - Automatiseren bouwtekenin
 
 Controleer het resultaat van de slice op twee punten:
 
-1. **Functionaliteit** tegen de Definition of Done uit CLAUDE.md en de sliceomschrijving in docs/Backlog.md - werkt het zoals omschreven, niet meer en niet minder.
+1. **Functionaliteit** tegen de Definition of Done uit het planbestand (.claude/plans/<slice-id>.md) en de sliceomschrijving in docs/Backlog.md - werkt het zoals omschreven, niet meer en niet minder.
 2. **Code-conventies** uit docs/Huisstijl_en_conventies.md: Nederlandse comments per blok aanwezig, bestandsstructuur/overzichtelijkheid, geen ongeautoriseerde nieuwe dependencies.
 
 ## Gevonden problemen

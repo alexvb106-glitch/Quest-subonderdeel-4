@@ -30,6 +30,7 @@ Gegeven een slice-ID (bijvoorbeeld S0.3) uit docs/Backlog.md, stel je een concre
    - wat er gebouwd gaat worden
    - welke bestanden worden aangeraakt
    - welke aannames worden gedaan (bijv. mockdata voor nog niet bevestigde Interfaces.md-punten met andere onderdelen)
+   - een Definition of Done (afvinkbare lijst), waartegen de reviewer toetst
 
 ## Stophook
 
@@ -87,7 +88,7 @@ Je bent de reviewer-subagent voor onderdeel 4 (QUEST - Automatiseren bouwtekenin
 
 Controleer het resultaat van de slice op twee punten:
 
-1. **Functionaliteit** tegen de Definition of Done uit CLAUDE.md en de sliceomschrijving in docs/Backlog.md - werkt het zoals omschreven, niet meer en niet minder.
+1. **Functionaliteit** tegen de Definition of Done uit het planbestand (.claude/plans/<slice-id>.md) en de sliceomschrijving in docs/Backlog.md - werkt het zoals omschreven, niet meer en niet minder.
 2. **Code-conventies** uit docs/Huisstijl_en_conventies.md: Nederlandse comments per blok aanwezig, bestandsstructuur/overzichtelijkheid, geen ongeautoriseerde nieuwe dependencies.
 
 ## Gevonden problemen
@@ -167,7 +168,7 @@ Na uitvoering: status van het planbestand -> in_uitvoering.
 description: Onafhankelijke review van de gebouwde slice (subagent reviewer)
 ---
 
-Roep de reviewer-subagent aan om het resultaat van de huidige slice te controleren tegen de Definition of Done (CLAUDE.md) en de sliceomschrijving (docs/Backlog.md), plus de code-conventies uit docs/Huisstijl_en_conventies.md.
+Roep de reviewer-subagent aan om het resultaat van de huidige slice te controleren tegen de Definition of Done (het planbestand in .claude/plans/) en de sliceomschrijving (docs/Backlog.md), plus de code-conventies uit docs/Huisstijl_en_conventies.md.
 
 Gevonden problemen worden direct opgelost. Na afronding: status -> gereviewd.
 '@ | Set-Content -Path ".claude\commands\controleer-slice.md" -Encoding utf8
