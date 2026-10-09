@@ -1,8 +1,8 @@
 # BACKLOG.md
 ### QUEST — Onderdeel 4 — Automatiseren bouwtekeningen
 
-> **Status:** v0.2 — concept, bijgewerkt na de spike-week in overleg met Alex van Bommel. Fase 1 is nog te bevestigen door Jeroen van Leening.
-> **Datum:** 7 oktober 2026 (eerder v0.1, 25 september 2026)
+> **Status:** v0.3 — concept, bijgewerkt na de spike-week in overleg met Alex van Bommel. Fase 1 is nog te bevestigen door Jeroen van Leening.
+> **Datum:** 9 oktober 2026 (S1.3 bijgewerkt na keuze PDF-library — eerder v0.2, 7 oktober 2026; v0.1, 25 september 2026)
 > **MVP-definitie (bevestigd):** zicht op alle drie de routes (a, b, c) — ook als er maar één volledig end-to-end uitgewerkt is, moet voor de andere twee minstens een onderbouwde haalbaarheidsinschatting liggen. Dit sluit aan bij PvA deelproduct 4.
 
 `[GEWIJZIGD v0.2]` S0.2 is afgesloten, Fase 1 is ingevuld op basis van `Spike_overdracht.md`, en de afhankelijkheden zijn aangepast aan de daar voorgestelde volgorde (de routes hangen niet langer af van de job-queue). S0.1 is bijgewerkt na controle van de repo.
@@ -40,7 +40,7 @@ Gebaseerd op de spike-bevindingen: maten komen uit getallen en vorm uit lijnen, 
 |---|---|---|---|---|---|
 | S1.1 | Tussenformaat en betrouwbaarheidslabels | Eén datastructuur per uitgelezen getal: waarde, positie, richting, bron en betrouwbaarheid. Eén set labels: `bewezen`, `onzeker`, `ontbreekt`. Beide routes schrijven naar dit formaat. Laat ruimte voor constructieve parameters, zonder ze in te vullen. | MVP | S0.1 | Open |
 | S1.2 | Ingang: vector of scan | Eén ingang die van een aangeleverd PDF-bestand bepaalt of het een vector-PDF of een scan is, en het doorstuurt naar de juiste route. Onbekende of corrupte bestanden geven een duidelijke fout. | MVP | S1.1 | Open |
-| S1.3 | Route (c) — vector-PDF | Tekst met positie uit de PDF lezen (aanpak Jeroen, PyMuPDF) en als maten in het tussenformaat zetten. Testtekening: Naxosdreef, schaal 1:100. Verwachte waarden uit de spike: breedte 25370 mm, diepte 9860 mm. | MVP | S1.2 | Open. `[OPEN]` PyMuPDF heeft een AGPL-licentie; nagaan of dat voor Inside Out een bezwaar is. |
+| S1.3 | Route (c) — vector-PDF | Tekst met positie uit de PDF lezen (aanpak Jeroen, in de spike met PyMuPDF; om te zetten naar pdfplumber, zie `Architecture.md` §1) en als maten in het tussenformaat zetten. Testtekening: Naxosdreef, schaal 1:100. Verwachte waarden uit de spike: breedte 25370 mm, diepte 9860 mm. | MVP | S1.2 | Open. AGPL-punt van PyMuPDF vervallen: het team koos op 9-10-2026 voor pdfplumber (MIT). |
 | S1.4 | Onafhankelijke controle (optelsom) | Maatketens optellen en vergelijken met de totaalmaat, draaiend op het tussenformaat en los van de detectiecode. Bepaalt het label per waarde. Bruikbaar voor beide routes. | MVP | S1.1, S1.3 | Open |
 | S1.5 | Route (c) — scan | Dakomtrek en dakopbouwen uit het beeld halen (aanpak Alex, OpenCV). Maten worden met de hand ingevoerd; OCR is niet getest. Aparte ijking per richting, omdat een oude scan niet maatvast is (3,6% verschil). Testtekening: Theemsdreef 1964. Kleine obstakels krijgen label `onzeker`. | MVP | S1.2, S1.4 | Open. `[OPEN]` Hoe de tool zelf het juiste deel van een blad vindt; in de spike waren zoekvensters en drempels handwerk. |
 | S1.6 | Uitvoer | Uit het tussenformaat genereren: JSON voor onderdeel 5, DXF voor de geometrie, een leesbaar rapport en een bewijsbestand per uitkomst. Het rapport is verplicht: het laat Inside Out-medewerkers zien wat de tool deed en hoe hij de tekening analyseerde. De vorm ligt niet vast (het spike-rapport van Alex is alleen een voorbeeld). | MVP | S1.3 (uit te breiden na S1.5) | Open. `[OPEN]` Uitvoerformaat IFC of DXF staat nog open in `CLAUDE.md` §1; de spike wijst naar DXF. |

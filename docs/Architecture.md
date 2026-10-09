@@ -1,8 +1,8 @@
 # ARCHITECTURE.md
 ### QUEST — Onderdeel 4 — Automatiseren bouwtekeningen
 
-> **Status:** v0.5 — concept, opgesteld in overleg met Alex van Bommel.
-> **Datum:** 9 oktober 2026 (§1 webframework vastgelegd — eerder v0.4, 7 oktober 2026; v0.3, 1 oktober 2026; v0.2, 25 september 2026)
+> **Status:** v0.6 — concept, opgesteld in overleg met Alex van Bommel.
+> **Datum:** 9 oktober 2026 (§1 PDF-library vastgelegd — eerder v0.5, 9 oktober 2026, §1 webframework vastgelegd; v0.4, 7 oktober 2026; v0.3, 1 oktober 2026; v0.2, 25 september 2026)
 > **Let op:** dit onderdeel start met een individuele spike-week per teamlid (zie `CLAUDE.md` §3). Enkele technische keuzes hieronder zijn daarom nog voorlopig — definitief te maken ná die week, op basis van wat werkte.
 
 ---
@@ -13,11 +13,13 @@
 |---|---|
 | Programmeertaal API/backend | **Python — bevestigd, teambreed besproken en vastgesteld (25-09-2026).** |
 | Webframework API | **FastAPI — gekozen door het team (Alex en Jeroen), 9-10-2026.** Argumentatie: automatisch gegenereerde, interactieve API-documentatie (OpenAPI) als hulp bij de afstemming met onderdeel 5; invoervalidatie via vaste types (Pydantic); goede ondersteuning voor asynchrone verwerking, passend bij de job-queue (§2.1). Alternatief Flask afgewezen: eenvoudiger, maar validatie en documentatie moeten dan zelf gebouwd worden. Wordt als runtime-dependency toegevoegd in S0.3. |
-| PDF-verwerking (route c) | `[OPEN]` Geen vaste aanpak — de te ontvangen archief-PDF's volgen geen vaste tekenstandaard (variëren per bouwperiode/gemeente), dus dit wordt per situatie/tijdens de spike verkend (OCR versus vectorisatie/beeldherkenning). |
+| PDF-verwerking (route c) | **pdfplumber (MIT) — gekozen door het team (Alex en Jeroen), 9-10-2026.** Eén library voor alle drie de PDF-stappen: indelen in vector of scan (S1.2, via tekens, lijnen, rechthoeken en afbeeldingen met positie per pagina), woorden met positie uitlezen (S1.3) en een pagina omzetten naar een beeld voor OpenCV (S1.5, via `to_image`). Alle meegetrokken pakketten hebben een ruime licentie: pdfminer.six (MIT), pypdfium2 (BSD-3/Apache-2.0) en Pillow. Alternatief PyMuPDF uit de spike van Jeroen afgewezen: de AGPL-licentie verplicht Inside Out de broncode van de hele tool vrij te geven zodra de API aan anderen wordt aangeboden, of een commerciële licentie van Artifex te kopen. pypdfium2 los (uitlezen per teken, omslachtig), pdfminer.six los (geen pagina als beeld) en pypdf (geen pagina als beeld, lijnen alleen via zelf ontleden) afgewezen omdat ze niet alle drie de stappen dekken. Nadeel van pdfplumber: trager dan PyMuPDF, voor losse bouwtekeningen op PoC-niveau geen bezwaar. De spike-code van Jeroen wordt omgezet in S1.3. Wordt als runtime-dependency toegevoegd in S1.2. |
 | Conversie naar IFC/DXF | `[OPEN]` Te verkennen tijdens spike-week, bijv. `ifcopenshell` (IFC) of `ezdxf` (DXF) als startpunt — nog niet gekozen. |
 | Dynamo-scripts (Alpha/Bravo-plaatsing) | Bestaand, werkend op Revit-projecten (zie `CLAUDE.md` §2) — dient als referentie voor plaatsings-/conversielogica, ook al is Revit niet langer de primaire route. |
 
 `[LET OP]` Tijdens de spike-week verkennen Alex en Jeroen desondanks nog **bewust hun eigen aanpak** voor de PDF-verwerking en conversielogica binnen Python (zie `CLAUDE.md` §3) — de taalkeuze staat vast, de precieze libraries/techniek per route nog niet.
+
+`[BIJGEWERKT v0.6 — 9 oktober 2026]` De spike-week is afgerond. De PDF-library ligt nu vast (pdfplumber, zie tabel). Conversie naar IFC/DXF staat nog open.
 
 **Argumentatie voor het uitstellen van PDF-verwerking/conversie:** de input (archief-PDF's) verschilt sterk per bouwperiode en gemeente, zonder vaste tekenstandaard. Eén aanpak vooraf kiezen zonder deze variatie gezien te hebben, zou een eerste-de-beste-keuze zijn in plaats van een onderbouwde. De argumentatie komt er wél, alleen pas ná de verkenning i.p.v. vooraf.
 
