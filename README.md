@@ -25,7 +25,7 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 
 # Dependencies installeren (runtime + test)
-pip install fastapi uvicorn pytest httpx
+pip install fastapi uvicorn pdfplumber pytest httpx
 
 # API-key zetten voor deze sessie (eigen waarde kiezen, nooit in de repo zetten)
 $env:ONDERDEEL4_API_KEY = "<jouw-api-key>"
@@ -40,4 +40,4 @@ Tests draaien: `python -m pytest`.
 
 ## Status
 
-Fase 0 — fundament; spike-week afgerond.
+Fase 1 — tussenformaat (S1.1) en ingang vector of scan (S1.2) gebouwd; nog niet gekoppeld aan de API.
