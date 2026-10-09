@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 # Maximale lengte van tekstvelden in de invoer (PoC-niveau, aanname 10 in het S0.3-plan)
 MAX_TEXT_LENGTH = 200
 
+# Toegestane routes en job-statussen (Interfaces.md §1 en §2)
 Route = Literal["a", "b", "c"]
 JobStatus = Literal["processing", "done", "failed"]
 
@@ -61,5 +62,6 @@ class ErrorDetail(BaseModel):
     boodschap: str
 
 
+# Omhulsel {"fout": {...}} rond de foutdetails, zoals in elke foutresponse
 class ErrorResponse(BaseModel):
     fout: ErrorDetail

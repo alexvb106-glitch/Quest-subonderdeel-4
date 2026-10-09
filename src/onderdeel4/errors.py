@@ -47,6 +47,9 @@ def _format_validation_errors(exc: RequestValidationError) -> str:
         # Locatie zonder het generieke voorvoegsel "body", bijv. "adres.postcode"
         location = ".".join(str(item) for item in error.get("loc", ()) if item != "body")
         error_type = error.get("type", "")
+        # Bij kapotte JSON is de "locatie" een tekenpositie, geen veldnaam: weglaten
+        if error_type == "json_invalid":
+            location = ""
         if error_type == "value_error":
             # Eigen validatieregels (bijv. "minstens één identificatieveld") leveren zelf de tekst
             description = str(error.get("ctx", {}).get("error", "ongeldige waarde"))

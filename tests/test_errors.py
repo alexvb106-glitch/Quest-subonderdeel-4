@@ -42,6 +42,8 @@ def test_malformed_json_returns_422(client, auth_headers):
         headers={**auth_headers, "Content-Type": "application/json"},
     )
     assert_error(response, 422, "ongeldige_invoer")
+    # Geen tekenpositie als "veldnaam" in de boodschap
+    assert response.json()["fout"]["boodschap"] == "De invoer is ongeldig: ongeldige JSON."
 
 
 # De boodschap noemt het betreffende veld, zodat onderdeel 5 een begrijpelijke melding kan tonen

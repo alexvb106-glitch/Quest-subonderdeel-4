@@ -1,6 +1,8 @@
 import pytest
+from fastapi.testclient import TestClient
 
 from conftest import assert_error
+from onderdeel4.config import API_KEY_ENV_VAR
 
 VALID_BODY = {"building_referentie": "NL.IMBAG.Pand.0363100012345678"}
 
@@ -46,10 +48,6 @@ def test_unconfigured_key_fails_closed(client_without_key, call_endpoint, auth_h
 
 # Env var leeg op de server: ook fail closed
 def test_empty_configured_key_fails_closed(app, monkeypatch, call_endpoint, auth_headers):
-    from fastapi.testclient import TestClient
-
-    from onderdeel4.config import API_KEY_ENV_VAR
-
     monkeypatch.setenv(API_KEY_ENV_VAR, "   ")
     client = TestClient(app, raise_server_exceptions=False)
     assert_error(call_endpoint(client, auth_headers), 500, "api_key_niet_geconfigureerd")
