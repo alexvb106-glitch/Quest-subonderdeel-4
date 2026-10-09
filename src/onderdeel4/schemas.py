@@ -1,9 +1,26 @@
-from typing import Literal
+import unicodedata
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 # Maximale lengte van tekstvelden in de invoer (PoC-niveau, aanname 10 in het S0.3-plan)
 MAX_TEXT_LENGTH = 200
+
+
+# Weiger controletekens (bijv. null bytes, escape-codes, regeleinden) in tekstvelden:
+# die horen niet in een referentie of adres en geven later problemen bij opslag en logging
+def _reject_control_characters(value: str) -> str:
+    if any(unicodedata.category(char) == "Cc" for char in value):
+        raise ValueError("bevat ongeldige (controle)tekens")
+    return value
+
+
+# Tekstveld voor de invoer: niet leeg, begrensde lengte, geen controletekens
+InputText = Annotated[
+    str,
+    Field(min_length=1, max_length=MAX_TEXT_LENGTH),
+    AfterValidator(_reject_control_characters),
+]
 
 # Toegestane routes en job-statussen (Interfaces.md §1 en §2)
 Route = Literal["a", "b", "c"]
@@ -15,10 +32,10 @@ JobStatus = Literal["processing", "done", "failed"]
 class Adres(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    straat: str = Field(min_length=1, max_length=MAX_TEXT_LENGTH)
-    huisnummer: str = Field(min_length=1, max_length=MAX_TEXT_LENGTH)
-    postcode: str = Field(min_length=1, max_length=MAX_TEXT_LENGTH)
-    plaats: str = Field(min_length=1, max_length=MAX_TEXT_LENGTH)
+    straat: InputText
+    huisnummer: InputText
+    postcode: InputText
+    plaats: InputText
 
 
 # Invoer voor POST /tekening. Geen bestandsveld: upload is nog een open punt
@@ -26,9 +43,7 @@ class Adres(BaseModel):
 class TekeningRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
-    building_referentie: str | None = Field(
-        default=None, min_length=1, max_length=MAX_TEXT_LENGTH
-    )
+    building_referentie: InputText | None = None
     adres: Adres | None = None
     voorkeursroute: Route | None = None
 

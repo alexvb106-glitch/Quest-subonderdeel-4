@@ -79,3 +79,92 @@ def test_unexpected_error_returns_500_without_details(app, client, auth_headers)
     assert "geheim intern detail" not in response.text
     assert "RuntimeError" not in response.text
     assert "Traceback" not in response.text
+
+
+# Breker S0.3: controletekens (null byte, escape-code, regeleinde) in tekstvelden worden geweigerd
+@pytest.mark.parametrize(
+    "body",
+    [
+        pytest.param({"building_referentie": "\x00"}, id="alleen-null-byte"),
+        pytest.param({"building_referentie": "pand\x00-1"}, id="null-byte-midden"),
+        pytest.param({"building_referentie": "pand\x1b[31m-1"}, id="escape-code"),
+        pytest.param({"adres": {**ADRES, "straat": "Hoofd\nstraat"}}, id="regeleinde-in-adres"),
+    ],
+)
+def test_control_characters_return_422(client, auth_headers, body):
+    response = client.post("/tekening", json=body, headers=auth_headers)
+    assert_error(response, 422, "ongeldige_invoer")
+    assert "controle" in response.json()["fout"]["boodschap"]
+
+
+# Breker S0.3: unicode en emoji zonder controletekens blijven gewoon toegestaan
+def test_unicode_text_is_accepted(client, auth_headers):
+    body = {"adres": {**ADRES, "straat": "Ĳsselstraat \U0001F3E0", "plaats": "'s-Hertogenbosch"}}
+    response = client.post("/tekening", json=body, headers=auth_headers)
+    assert response.status_code == 202
+
+
+# Breker S0.3: een extreem lange onbekende veldnaam wordt niet volledig teruggestuurd
+def test_long_unknown_field_name_is_truncated(client, auth_headers):
+    body = {"building_referentie": "pand-1", "k" * 100_000: 1}
+    response = client.post("/tekening", json=body, headers=auth_headers)
+    assert_error(response, 422, "ongeldige_invoer")
+    assert len(response.text) < 500
+
+
+# Breker S0.3: duizenden onbekende velden geven een korte boodschap met alleen een telling
+def test_many_unknown_fields_are_summarized(client, auth_headers):
+    body = {"building_referentie": "pand-1", **{f"veld{i}": 1 for i in range(5000)}}
+    response = client.post("/tekening", json=body, headers=auth_headers)
+    assert_error(response, 422, "ongeldige_invoer")
+    assert len(response.text) < 1000
+    assert "en nog 4995 andere fout(en)" in response.json()["fout"]["boodschap"]
+
+
+# Breker S0.3: controletekens in een onbekende veldnaam worden niet teruggekaatst
+def test_unknown_field_name_with_control_characters_is_sanitized(client, auth_headers):
+    response = client.post(
+        "/tekening",
+        content=rb'{"building_referentie": "pand-1", "a\u0000\u001b[31m": 1}',
+        headers={**auth_headers, "Content-Type": "application/json"},
+    )
+    assert_error(response, 422, "ongeldige_invoer")
+    boodschap = response.json()["fout"]["boodschap"]
+    assert "\x00" not in boodschap and "\x1b" not in boodschap
+
+
+# Breker S0.3: onleesbare body (ongeldige UTF-8, extreem diep geneste JSON) geeft een
+# 400 in het eigen formaat met een eigen code, geen crash
+@pytest.mark.parametrize(
+    "content",
+    [
+        pytest.param(b'{"building_referentie": "\xff\xfe"}', id="ongeldige-utf8"),
+        pytest.param(b"[" * 100_000 + b"]" * 100_000, id="diep-genest"),
+    ],
+)
+def test_unreadable_body_returns_400(client, auth_headers, content):
+    response = client.post(
+        "/tekening", content=content, headers={**auth_headers, "Content-Type": "application/json"}
+    )
+    assert_error(response, 400, "ongeldig_verzoek")
+
+
+# Breker S0.3: multipart-upload (bestandsveld) wordt geweigerd in het eigen formaat, zonder crash
+def test_multipart_upload_is_rejected(client, auth_headers):
+    response = client.post(
+        "/tekening",
+        data={"building_referentie": "pand-1"},
+        files={"bestanden": ("tekening.pdf", b"%PDF-1.4 kapot", "application/pdf")},
+        headers=auth_headers,
+    )
+    assert_error(response, 422, "ongeldige_invoer")
+
+
+# Breker S0.3: een grote binaire body wordt geweigerd in het eigen formaat, zonder crash
+def test_large_binary_body_is_rejected(client, auth_headers):
+    response = client.post(
+        "/tekening",
+        content=b"\x00\xff" * (5 * 1024 * 1024),
+        headers={**auth_headers, "Content-Type": "application/octet-stream"},
+    )
+    assert_error(response, 422, "ongeldige_invoer")

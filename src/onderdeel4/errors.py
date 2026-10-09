@@ -39,13 +39,28 @@ _VALIDATION_MESSAGES = {
     "json_invalid": "ongeldige JSON",
 }
 
+# Grenzen voor de foutboodschap. Veldnamen in de locatie kunnen van de aanroeper komen
+# (onbekende extra velden), dus nooit onbegrensd of ongefilterd terugsturen.
+MAX_LOCATION_LENGTH = 50
+MAX_REPORTED_ERRORS = 5
+
+
+# Maak een locatie veilig om terug te sturen: alleen printbare tekens, en ingekort
+def _safe_location(location: str) -> str:
+    cleaned = "".join(char if char.isprintable() else "?" for char in location)
+    if len(cleaned) > MAX_LOCATION_LENGTH:
+        cleaned = cleaned[:MAX_LOCATION_LENGTH] + "..."
+    return cleaned
+
 
 # Bouw uit de lijst met validatiefouten één leesbare boodschap
 def _format_validation_errors(exc: RequestValidationError) -> str:
     parts = []
-    for error in exc.errors():
+    errors = exc.errors()
+    for error in errors[:MAX_REPORTED_ERRORS]:
         # Locatie zonder het generieke voorvoegsel "body", bijv. "adres.postcode"
         location = ".".join(str(item) for item in error.get("loc", ()) if item != "body")
+        location = _safe_location(location)
         error_type = error.get("type", "")
         # Bij kapotte JSON is de "locatie" een tekenpositie, geen veldnaam: weglaten
         if error_type == "json_invalid":
@@ -61,11 +76,17 @@ def _format_validation_errors(exc: RequestValidationError) -> str:
             parts.append("request body ontbreekt")
         else:
             parts.append(description)
+    # Overige fouten alleen tellen, zodat de boodschap klein blijft
+    remaining = len(errors) - MAX_REPORTED_ERRORS
+    if remaining > 0:
+        parts.append(f"en nog {remaining} andere fout(en)")
     return "De invoer is ongeldig: " + "; ".join(parts) + "."
 
 
-# Codes en boodschappen voor generieke HTTP-fouten (onbekend pad, verkeerde methode)
+# Codes en boodschappen voor generieke HTTP-fouten
+# (onleesbare body zoals ongeldige UTF-8 of te diep geneste JSON, onbekend pad, verkeerde methode)
 _HTTP_ERRORS = {
+    400: ("ongeldig_verzoek", "De request body kon niet worden gelezen."),
     404: ("niet_gevonden", "Het opgevraagde pad bestaat niet."),
     405: ("methode_niet_toegestaan", "Deze HTTP-methode is niet toegestaan voor dit pad."),
 }
