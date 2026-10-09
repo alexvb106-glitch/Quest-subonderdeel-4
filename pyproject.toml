@@ -3,7 +3,7 @@ name = "onderdeel-4"
 version = "0.1.0"
 description = "QUEST onderdeel 4: gezocht gebouw koppelen aan een bruikbare bouwtekening."
 requires-python = ">=3.14"
-dependencies = ["fastapi", "uvicorn"]
+dependencies = ["fastapi", "uvicorn", "pdfplumber"]
 
 [dependency-groups]
 dev = ["pytest", "httpx"]
