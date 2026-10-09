@@ -7,7 +7,9 @@ from pydantic import ValidationError
 from onderdeel4.intermediate_format import ExtractionResult, Measurement
 
 
-# Hulpfunctie: geldige basisgegevens voor één maat, per test aan te passen
+# Hulpfunctie: geldige basisgegevens voor één maat, per test aan te passen.
+# De waarde 25370 mm komt uit de spike (Naxosdreef); coördinaten en bestandsnamen
+# in dit bestand zijn fictief en alleen bedoeld om het formaat te testen.
 def make_measurement_data(**overrides) -> dict:
     data = {
         "id": "m1",
@@ -156,9 +158,18 @@ def test_unknown_source_type_is_rejected():
         )
 
 
-def test_empty_source_file_is_rejected():
+@pytest.mark.parametrize("filename", ["", "   "])
+def test_empty_source_file_is_rejected(filename):
     with pytest.raises(ValidationError):
-        Measurement(**make_measurement_data(bron={"type": "vector", "bestand": ""}))
+        Measurement(
+            **make_measurement_data(bron={"type": "vector", "bestand": filename})
+        )
+
+
+@pytest.mark.parametrize("measurement_id", ["", "   "])
+def test_empty_id_is_rejected(measurement_id):
+    with pytest.raises(ValidationError):
+        Measurement(**make_measurement_data(id=measurement_id))
 
 
 def test_unknown_position_unit_is_rejected():
@@ -222,7 +233,10 @@ def test_unknown_format_version_is_rejected():
         ExtractionResult(formaat_versie="0.2")
 
 
-# JSON round-trip met de spikewaarden van Naxosdreef plus één onzekere scanmaat
+# JSON round-trip met de spikewaarden van Naxosdreef plus één onzekere scanmaat.
+# Breedte 25370 mm en diepte 9860 mm komen uit de spike. De scanmaat (25400 mm,
+# bestand naxosdreef_scan.png) is FICTIEF: van Naxosdreef bestaat in de spike geen
+# scan. Alle coördinaten zijn eveneens verzonnen.
 def build_naxosdreef_result() -> ExtractionResult:
     return ExtractionResult(
         maten=[
@@ -253,7 +267,7 @@ def build_naxosdreef_result() -> ExtractionResult:
                 "bron": {
                     "type": "scan",
                     "bestand": "naxosdreef_scan.png",
-                    "toelichting": "handmatig afgelezen van scan",
+                    "toelichting": "fictieve testwaarde",
                 },
                 "betrouwbaarheid": "onzeker",
                 "ruwe_tekst": "25400",

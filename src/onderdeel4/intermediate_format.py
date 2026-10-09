@@ -22,7 +22,8 @@ PositionUnit = Literal["pt", "px"]
 # Eindig getal: NaN en (-)oneindig worden geweigerd
 FiniteFloat = Annotated[float, Field(allow_inf_nan=False)]
 
-# Niet-lege tekst (na het weghalen van witruimte aan de randen)
+# Niet-lege tekst. Witruimte aan de randen wordt eerst weggehaald via
+# str_strip_whitespace in de modelconfiguratie, dus "   " telt ook als leeg.
 NonEmptyText = Annotated[str, Field(min_length=1)]
 
 
