@@ -307,3 +307,113 @@ def test_json_uses_dutch_field_names_and_plain_labels():
     assert data["maten"][1]["richting"] == "verticaal"
     assert data["maten"][2]["betrouwbaarheid"] == "onzeker"
     assert data["maten"][2]["bron"]["type"] == "scan"
+
+
+# Breektests (na review): wijzigingen ná constructie mogen de validatie niet omzeilen
+def test_assigning_nan_after_construction_is_rejected():
+    measurement = Measurement(**make_measurement_data())
+    with pytest.raises(ValidationError):
+        measurement.waarde = math.nan
+
+
+def test_assigning_none_to_value_with_label_onzeker_is_rejected():
+    measurement = Measurement(**make_measurement_data())
+    with pytest.raises(ValidationError):
+        measurement.waarde = None
+
+
+def test_assigning_constructive_parameters_after_construction_is_rejected():
+    result = ExtractionResult()
+    with pytest.raises(ValidationError):
+        result.constructieve_parameters = {"dragende_wanden": []}
+
+
+def test_mutated_measurement_is_revalidated_when_wrapped():
+    # model_copy(update=...) valideert niet; in een resultaat zetten moet dat wel doen
+    broken = Measurement(**make_measurement_data()).model_copy(update={"waarde": math.inf})
+    with pytest.raises(ValidationError):
+        ExtractionResult(maten=[broken])
+
+
+def test_to_json_rejects_duplicate_id_created_after_construction():
+    result = ExtractionResult(
+        maten=[make_measurement_data(id="a"), make_measurement_data(id="b")]
+    )
+    result.maten[1].id = "a"
+    with pytest.raises(ValidationError):
+        result.to_json()
+
+
+def test_to_json_rejects_invalid_item_appended_to_maten():
+    result = ExtractionResult()
+    result.maten.append("geen maat")
+    with pytest.raises(ValidationError):
+        result.to_json()
+
+
+def test_to_json_never_writes_nan_as_null():
+    # Zonder hervalidatie schreef Pydantic NaN stil weg als null (met label 'onzeker').
+    # object.__setattr__ omzeilt validate_assignment, zoals een buggy route dat zou kunnen.
+    result = ExtractionResult(maten=[make_measurement_data()])
+    object.__setattr__(result.maten[0], "waarde", math.nan)
+    with pytest.raises(ValidationError):
+        result.to_json()
+
+
+# Breektests (na review): tekst met alleen onzichtbare tekens telt als leeg
+@pytest.mark.parametrize("invisible", ["​", "\x00", "﻿", "　", "​ "])
+def test_id_with_only_invisible_characters_is_rejected(invisible):
+    with pytest.raises(ValidationError):
+        Measurement(**make_measurement_data(id=invisible))
+
+
+@pytest.mark.parametrize("invisible", ["​", "\x00", "﻿"])
+def test_source_file_with_only_invisible_characters_is_rejected(invisible):
+    with pytest.raises(ValidationError):
+        Measurement(
+            **make_measurement_data(bron={"type": "vector", "bestand": invisible})
+        )
+
+
+@pytest.mark.parametrize("invisible", ["​", "\x00", "﻿", "　"])
+def test_proven_with_only_invisible_justification_is_rejected(invisible):
+    with pytest.raises(ValidationError):
+        Measurement(
+            **make_measurement_data(betrouwbaarheid="bewezen", onderbouwing=invisible)
+        )
+
+
+def test_proven_rules_also_apply_via_json():
+    data = make_measurement_data(betrouwbaarheid="bewezen", onderbouwing="​")
+    with pytest.raises(ValidationError):
+        ExtractionResult.from_json(json.dumps({"maten": [data]}))
+
+
+# Breektests (na review): extreme maar eindige getallen blijven geldig en overleven de round-trip
+@pytest.mark.parametrize("value", [1e308, -1e308, 5e-324, -0.0])
+def test_extreme_finite_values_round_trip(value):
+    result = ExtractionResult(maten=[make_measurement_data(waarde=value)])
+    restored = ExtractionResult.from_json(result.to_json())
+    assert restored.maten[0].waarde == value
+    assert math.copysign(1.0, restored.maten[0].waarde) == math.copysign(1.0, value)
+
+
+@pytest.mark.parametrize("literal", ["1e400", "-1e400", "NaN", "Infinity", '"inf"'])
+def test_non_finite_json_values_are_rejected(literal):
+    text = json.dumps({"maten": [make_measurement_data(waarde=0)]}).replace(
+        '"waarde": 0', f'"waarde": {literal}'
+    )
+    with pytest.raises(ValidationError):
+        ExtractionResult.from_json(text)
+
+
+@pytest.mark.parametrize("text", ["", "[]", "null", '{"maten": [', "{} x", '{"maten": null}'])
+def test_broken_or_wrong_json_is_rejected(text):
+    with pytest.raises(ValidationError):
+        ExtractionResult.from_json(text)
+
+
+def test_deeply_nested_json_is_rejected_without_crash():
+    text = '{"constructieve_parameters": ' + "[" * 100_000 + "]" * 100_000 + "}"
+    with pytest.raises(ValidationError):
+        ExtractionResult.from_json(text)

@@ -5,9 +5,10 @@ en de uitvoer (S1.6) lezen eruit. Dit bestand bevat alleen de datastructuur en
 consistentiebewaking, geen detectie, controle of uitvoer.
 """
 
+import unicodedata
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, model_validator
 
 # Huidige versie van het tussenformaat, zodat latere uitbreidingen herkenbaar zijn
 FORMAT_VERSION = "0.1"
@@ -22,15 +23,41 @@ PositionUnit = Literal["pt", "px"]
 # Eindig getal: NaN en (-)oneindig worden geweigerd
 FiniteFloat = Annotated[float, Field(allow_inf_nan=False)]
 
+# Onzichtbare tekens: witruimte, stuurtekens (Cc), opmaaktekens zoals zero-width space (Cf)
+# en scheidingstekens (Z*). Tekst die alleen hieruit bestaat, telt als leeg.
+_INVISIBLE_CATEGORIES = {"Cc", "Cf", "Zs", "Zl", "Zp"}
+
+
+def _has_visible_text(value: str | None) -> bool:
+    return bool(value) and any(
+        unicodedata.category(char) not in _INVISIBLE_CATEGORIES for char in value
+    )
+
+
+def _require_visible_text(value: str) -> str:
+    if not _has_visible_text(value):
+        raise ValueError("tekst mag niet leeg zijn of alleen uit onzichtbare tekens bestaan")
+    return value
+
+
 # Niet-lege tekst. Witruimte aan de randen wordt eerst weggehaald via
-# str_strip_whitespace in de modelconfiguratie, dus "   " telt ook als leeg.
-NonEmptyText = Annotated[str, Field(min_length=1)]
+# str_strip_whitespace in de modelconfiguratie, dus "   " telt ook als leeg;
+# tekst met alleen onzichtbare tekens (bijv. een zero-width space of een nulbyte) ook.
+NonEmptyText = Annotated[str, Field(min_length=1), AfterValidator(_require_visible_text)]
+
+# Modelconfiguratie voor alle modellen in dit formaat:
+# - extra="forbid": onbekende velden worden geweigerd;
+# - validate_assignment: ook een toewijzing na constructie wordt gevalideerd
+#   (anders kan bijv. NaN of een gevulde constructieve_parameters er alsnog in);
+# - revalidate_instances="always": een al gemaakt (en daarna mogelijk aangepast)
+#   object wordt opnieuw gecontroleerd als het in een ander model wordt gezet.
+_STRICT_MODEL = {"extra": "forbid", "validate_assignment": True, "revalidate_instances": "always"}
 
 
 # Plek van een getal op de tekening, in de eenheid van de bron:
 # PDF-punten (pt) voor vector-PDF, pixels (px) voor een scan. Pagina is 1-gebaseerd.
 class Position(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(**_STRICT_MODEL)
 
     pagina: int = Field(ge=1)
     x: FiniteFloat
@@ -40,7 +67,7 @@ class Position(BaseModel):
 
 # Herkomst van een getal: welk soort bron en welk bestand
 class Source(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(**_STRICT_MODEL, str_strip_whitespace=True)
 
     type: SourceType
     bestand: NonEmptyText
@@ -49,7 +76,7 @@ class Source(BaseModel):
 
 # Eén uitgelezen getal met waarde (mm), positie, richting, bron en betrouwbaarheid
 class Measurement(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    model_config = ConfigDict(**_STRICT_MODEL, str_strip_whitespace=True)
 
     id: NonEmptyText
     waarde: FiniteFloat | None
@@ -71,14 +98,14 @@ class Measurement(BaseModel):
             raise ValueError(
                 f"label '{self.betrouwbaarheid}' vereist een waarde; gebruik 'ontbreekt'"
             )
-        if self.betrouwbaarheid == "bewezen" and not self.onderbouwing:
+        if self.betrouwbaarheid == "bewezen" and not _has_visible_text(self.onderbouwing):
             raise ValueError("label 'bewezen' vereist een niet-lege onderbouwing")
         return self
 
 
 # Het tussenformaat van één verwerkte tekening
 class ExtractionResult(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(**_STRICT_MODEL)
 
     formaat_versie: Literal["0.1"] = FORMAT_VERSION
     maten: list[Measurement] = Field(default_factory=list)
@@ -98,9 +125,14 @@ class ExtractionResult(BaseModel):
             seen.add(measurement.id)
         return self
 
-    # JSON-(de)serialisatie voor tests en bewijs; geen uitvoerformaat (dat is S1.6)
+    # JSON-(de)serialisatie voor tests en bewijs; geen uitvoerformaat (dat is S1.6).
+    # to_json valideert eerst het hele object opnieuw: wijzigingen die validate_assignment
+    # niet ziet (bijv. maten.append(...), een id in een bestaande maat dubbel maken,
+    # model_copy(update=...)) leveren zo een fout op in plaats van JSON die from_json
+    # weigert of, erger, een NaN die stil als null wordt weggeschreven.
     def to_json(self) -> str:
-        return self.model_dump_json(indent=2)
+        validated = type(self).model_validate(self.model_dump(warnings=False))
+        return validated.model_dump_json(indent=2)
 
     @classmethod
     def from_json(cls, data: str) -> "ExtractionResult":
